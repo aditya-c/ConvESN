@@ -1,5 +1,6 @@
 import numpy as np
 import pickle as cp
+import argparse
 
 from keras.models import Model
 from keras.layers import Input, Dense, Dropout, concatenate
@@ -7,6 +8,16 @@ from keras.layers import Conv2D, GlobalMaxPooling2D
 
 import reservoir
 import utils
+
+
+# Instantiate the parser
+parser = argparse.ArgumentParser(description='ConvESN_MSMC')
+
+# Required positional argument
+parser.add_argument('input_folder', default= "./data/padded", help='the skeleton data folder name')
+
+args = parser.parse_args()
+
 
 print('Loading data...')
 """
@@ -16,8 +27,8 @@ the shape of the last one: (num_samples,)
 """
 # filepath_train = './dataset/MSRAction3D_real_world_P4_Split_AS3_train.p'
 # filepath_test = './dataset/MSRAction3D_real_world_P4_Split_AS3_test.p'
-filepath_train = './Data Preperation/data/padded/MSRAction3D_real_world_P4_Split_AS1_train.p'
-filepath_test = './Data Preperation/data/padded/MSRAction3D_real_world_P4_Split_AS1_test.p'
+filepath_train = args.input_folder + '/MSRAction3D_real_world_P4_Split_AS1_train.p'
+filepath_test = args.input_folder + '/MSRAction3D_real_world_P4_Split_AS1_test.p'
 
 data_train = cp.load(open(filepath_train, 'rb'))
 skeletons_train = data_train[0:5]
