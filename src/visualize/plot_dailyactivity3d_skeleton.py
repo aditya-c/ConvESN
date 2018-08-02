@@ -5,16 +5,65 @@ import matplotlib.animation
 import pandas as pd
 import argparse
 
+from src.tools import msrda_utils
+
+from itertools import groupby
+from operator import itemgetter
+
 ########################################
 # File Readers
 ########################################
 
 JOINTS_PER_FRAME = 20
+MISSING_FRAME = "MISSING_FRAME"
+
+
+# def handle_missing_data(video_frames, missing_list, strategy=2):
+#     print("Missing at Frames :::", missing_list)
+#     missing_ranges = []
+
+#     for _, g in groupby(enumerate(missing_list), lambda x: x[0] - x[1]):
+#         group = list(map(int, map(itemgetter(1), g)))
+#         missing_ranges.append((group[0], group[-1]))
+
+#     # Strategy 1 :: replicate the old frame
+#     # we assume that atleast the last "look_behind" frames are corrupt
+#     if strategy == 1:
+
+#         print("yopooo")
+#         look_behind = 4
+#         for start, end in missing_ranges:
+#             replicate_idx = max(start - look_behind, 0)
+#             for frame_idx in range(replicate_idx + 1, end + 1):
+#                 video_frames[frame_idx] = video_frames[replicate_idx]
+
+#     # Strategy 2 :: interpolation
+#     # we assume that atleast the last "look_behind" frames are corrupt
+#     elif strategy == 2:
+#         print("uo")
+#         look_behind = 5
+#         for start, end in missing_ranges:
+#             valid_start = max(start - look_behind, 0)
+#             if end + 1 >= len(video_frames):
+#                 # we will resort to dropping the frames
+#                 video_frames = [value for value in video_frames if value != MISSING_FRAME]
+#             else:
+#                 # interpolation
+#                 np_start = np.array(video_frames[valid_start])
+#                 np_end = np.array(video_frames[end + 1])
+#                 np_increment = (np_end - np_start) / (end + 1 - valid_start)
+#                 for frame_idx in range(valid_start + 1, end + 1):
+#                     video_frames[frame_idx] = video_frames[valid_start] + np_increment * (frame_idx - valid_start)
+#     else:
+#         # drop missing frames
+#         video_frames = [value for value in video_frames if value != MISSING_FRAME]
 
 
 def read_msr_daily_activity_skeleton_file(filename):
     # return a dataframe of the frame data
-    global JOINTS_PER_FRAME
+    global JOINTS_PER_FRAME, MISSING_FRAME
+
+    missing_at = []
 
     with open(filename, "r") as f:
         # first line has the number of frames
@@ -30,7 +79,8 @@ def read_msr_daily_activity_skeleton_file(filename):
             datapoints = int(f.readline().rstrip("\n"))
             if datapoints == 0:
                 # no skeletons found if 0
-                pass
+                missing_at.append(frame_count)
+                video_data.append(MISSING_FRAME)
             else:
                 # refresh the frame data
                 frame_data = []
@@ -38,16 +88,24 @@ def read_msr_daily_activity_skeleton_file(filename):
                 for data_count in range(datapoints):
                     datum = f.readline().rstrip("\n").split(" ")
                     frame_data.append(list(map(float, datum[:4])))
-            # consolidate into a video list
-            video_data.extend(frame_data[1::2][:JOINTS_PER_FRAME])
-        # return a video dataframe
-        _frames = np.array([np.ones(20) * i for i in range(total_frames)]).flatten()
+                # consolidate into a video list
+                video_data.append(frame_data[1::2][:JOINTS_PER_FRAME])
+
+        # Handling the MISSING_FRAMES
+        if missing_at:
+            handle_missing_data(video_data, missing_at)
+
+        # flattenings
+        final_frames = len(video_data)
+        _frames = np.array([np.ones(20) * i for i in range(final_frames)]).flatten()
+        video_data = [item for sublist in video_data for item in sublist]
         video_data = np.array(video_data)
+
+        # return a video dataframe
         df = pd.DataFrame({"frame": _frames, "x": video_data[:, 0],
                            "y": video_data[:, 1], "z": video_data[:, 2], "conf": video_data[:, 3]})
-        # normalize the "z" column
-        min_max_scaling(df, "z")
-    return df
+
+    return df, final_frames
 
 
 def min_max_scaling(dataframe, column_name):
@@ -133,6 +191,8 @@ def main():
         in plot (will not be available in the video)')
     parser.add_argument('--output', nargs='?', help='output file name')
 
+    parser.add_argument('--save', action='store_true')
+
     args = parser.parse_args()
 
     out_file = args.filename[:-3] + "_3d_vid.mp4"
@@ -145,7 +205,11 @@ def main():
     # skeleton_file = "a16_s10_e02_skeleton.txt"
     # working with the skeleton file
     skeleton_file = args.filename
-    df = read_msr_daily_activity_skeleton_file(skeleton_file)
+    with open(skeleton_file, "r") as f:
+        df, final_frames = read_msr_daily_activity_skeleton_file(f)
+
+    # normalize the "z" column
+    min_max_scaling(df, "z")
 
     fig = plt.figure()
     ax = fig.add_subplot(111, projection='3d')
@@ -168,12 +232,13 @@ def main():
     for _ in range(num_of_bones):
         segments.append(ax.plot([0, 0], [0, 0], [0, 0])[0])
 
-    ani = matplotlib.animation.FuncAnimation(fig, update_graph, 99,
+    ani = matplotlib.animation.FuncAnimation(fig, update_graph, final_frames,
                                              fargs=[df, graph, segments, title],
                                              interval=interval, blit=False)
 
-    ani.save(out_file, fps=30, extra_args=['-vcodec', 'libx264'],
-             metadata={'artist': 'skeleton'})
+    if args.save:
+        ani.save(out_file, fps=30, extra_args=['-vcodec', 'libx264'],
+                 metadata={'artist': 'skeleton'})
 
     plt.show()
 

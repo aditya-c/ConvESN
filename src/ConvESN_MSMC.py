@@ -5,16 +5,23 @@ import argparse
 from keras.models import Model
 from keras.layers import Input, Dense, Dropout, concatenate
 from keras.layers import Conv2D, GlobalMaxPooling2D
+from keras.callbacks import TensorBoard
+from keras.callbacks import ModelCheckpoint
+
+from sklearn.metrics import confusion_matrix
 
 import reservoir
 import utils
+from time import time
 
 
 # Instantiate the parser
 parser = argparse.ArgumentParser(description='ConvESN_MSMC')
 
 # Required positional argument
-parser.add_argument('input_folder', default= "./data/padded", help='the skeleton data folder name')
+parser.add_argument('input_folder', default='./data/padded', help='the skeleton data folder name')
+parser.add_argument('split_number', default='1', help='split number to consider')
+parser.add_argument('--fit_model', action='store_true')
 
 args = parser.parse_args()
 
@@ -27,8 +34,8 @@ the shape of the last one: (num_samples,)
 """
 # filepath_train = './dataset/MSRAction3D_real_world_P4_Split_AS3_train.p'
 # filepath_test = './dataset/MSRAction3D_real_world_P4_Split_AS3_test.p'
-filepath_train = args.input_folder + '/MSRAction3D_real_world_P4_Split_AS1_train.p'
-filepath_test = args.input_folder + '/MSRAction3D_real_world_P4_Split_AS1_test.p'
+filepath_train = args.input_folder + '/MSRAction3D_real_world_P4_Split_AS' + args.split_number + '_train.p'
+filepath_test = args.input_folder + '/MSRAction3D_real_world_P4_Split_AS' + args.split_number + '_test.p'
 
 data_train = cp.load(open(filepath_train, 'rb'))
 skeletons_train = data_train[0:5]
@@ -36,6 +43,15 @@ labels_train = data_train[5]
 data_test = cp.load(open(filepath_test, 'rb'))
 skeletons_test = data_test[0:5]
 labels_test = data_test[5]
+
+
+def print_shapes(skeletons_data, annotation="train"):
+    for skeleton in skeletons_data:
+        print(annotation, "::::", skeleton.shape)
+
+
+print_shapes(skeletons_train, "train")
+print_shapes(skeletons_test, "test")
 
 print('Transfering labels...')
 labels_train, labels_test, num_classes = utils.transfer_labels(labels_train, labels_test)
@@ -113,4 +129,24 @@ model = Model(inputs=inputs, outputs=outputs)
 
 model.compile(optimizer=optimizer, loss='categorical_crossentropy', metrics=['accuracy'])
 
-model.fit(echo_states_train, labels_train, batch_size=batch_size, epochs=nb_epoch, verbose=verbose, validation_data=(echo_states_test, labels_test))
+tensorboard = TensorBoard(log_dir="logs/{}".format(time()))
+
+checkpoint_file = "check_points/weights-improvement_best.hdf5"
+
+checkpoint = ModelCheckpoint(checkpoint_file, monitor='val_acc', verbose=1, save_best_only=True, mode='max')
+callbacks_list = [checkpoint, tensorboard]
+
+# model.fit(echo_states_train, labels_train, batch_size=batch_size, epochs=nb_epoch, verbose=verbose, validation_split=0.33, callbacks=callbacks_list)
+if args.fit_model:
+    model.fit(echo_states_train, labels_train, batch_size=batch_size, epochs=nb_epoch, verbose=verbose, validation_data=(echo_states_test, labels_test), callbacks=callbacks_list)
+
+model.load_weights(checkpoint_file)
+model.compile(loss='categorical_crossentropy', optimizer=optimizer, metrics=['accuracy'])
+
+scores = model.evaluate(echo_states_test, labels_test, batch_size=batch_size, verbose=verbose)
+print("{}: {} and loss is {}".format(model.metrics_names[1], scores[1] * 100, scores[0]))
+
+labels_test_pred = model.predict(echo_states_test)
+
+print(labels_test.shape, labels_test_pred.shape)
+print(confusion_matrix(labels_test, labels_test_pred))

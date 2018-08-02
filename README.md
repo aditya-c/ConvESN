@@ -12,10 +12,18 @@ the skeleton data files for daily acitivity dataset need to be saved at data/MSR
 
 # Code to modify DailyActivityData into the format for ConvESN code
 
-python Data_Preparation/daily_activity_skeletons_to_msr_actions.py ./data/MSRDailyAct3D/ ./data/modified/ --folder
+python src/Data_Preparation/daily_activity_skeletons_to_msr_actions.py ./data/MSRDailyAct3D/ ./data/modified/ --folder
 
-python Data_Preparation/Load_MSRA3D_real_world_modified.py ./data/modified/
+python src/Data_Preparation/Load_MSRA3D_real_world_modified.py ./data/modified/
 
-python Data_Preparation/Padding.py ./data/DataBackUp ./data/padded/
+python src/Data_Preparation/Padding.py ./data/DataBackUp ./data/padded/
 
-python ConvESN_MSMC.py ./data/padded/
+python src/ConvESN_MSMC.py ./data/padded/ 1 --fit_model
+
+
+
+# testing code snipets
+x="./data/MSRDailyAct3D/a13_s06_e01_skeleton.txt"
+python src/Data_Preparation/daily_activity_skeletons_to_msr_actions.py $x ./data/test/
+
+python src/Data_Preparation/plot_dailyactivity3d_skeleton.py $x
