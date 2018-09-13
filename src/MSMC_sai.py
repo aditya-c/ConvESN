@@ -1,36 +1,36 @@
 import numpy as np
 import pickle
 import argparse
+import sys
+from time import time
 
 from keras.models import Model, load_model
-from keras.layers import Input, Dense, Dropout, concatenate
+from keras.layers import Input, Dense, concatenate
 from keras.layers import Conv2D, GlobalMaxPooling2D
-from keras.callbacks import TensorBoard
-from keras.callbacks import ModelCheckpoint
+from keras.callbacks import TensorBoard, ModelCheckpoint
 
 import reservoir_sai as reservoir
 import utils
-from time import time
-import sys
 
 
 def parse_args():
     """
-    returns {input_folder, split_number, train}
+    returns {input, split_number, train}
     """
     # Instantiate the parser
     parser = argparse.ArgumentParser(description='ConvESN_MSMC')
 
     # location of the padded skeleton data
-    parser.add_argument('input_folder', default='./data/padded', help='the skeleton data folder name')
+    parser.add_argument('input', default='./data/padded', help='the skeleton data folder/ test file name')
     # choose the split number from the padded files
-    parser.add_argument('split_number', default='1', help='split number to use')
+    parser.add_argument('-split_number', nargs='?', default='1', help='split number to use')
     # trains a model if set to true
     parser.add_argument('--train', action='store_true')
     # name of checkpoint file (save to/ load from)
     parser.add_argument('-checkpoint', default='check_points/weights-improvement_test.hdf5', nargs='?', help="name of checkpoint file to load/save")
     # save reservoir along with model
     parser.add_argument('-reservoir', default='reservoir/reservoir_test.pkl', nargs='?', help="name of checkpoint file to load/save")
+    parser.add_argument('-test_sample', action='store_true')
 
     return parser.parse_args()
 
@@ -54,13 +54,29 @@ def print_shapes(skeletons_data, annotation="train"):
 
 
 if __name__ == "__main__":
+    total_reservoirs = 5
     # parse arguments
     args = parse_args()
 
+    if args.test_sample:
+        print("Setting Up")
+        skeletons, _ = get_data(args.input)
+        _, time_length, n_in = skeletons[0].shape
+        with open(args.reservoir, 'rb') as f:
+            reservoirs = pickle.load(f)
+        echo_states_test = [np.empty((1, 1, time_length, n_in * 3), np.float32) for i in range(5)]
+        for i in range(total_reservoirs):
+            echo_states_test[i][:, 0, :, :] = reservoirs[i].get_echo_states(skeletons[i])
+        echo_states_test = [np.concatenate(echo_states_test[0:2], axis=1), np.concatenate(echo_states_test[2:4], axis=1), echo_states_test[4]]
+        model = load_model(args.checkpoint)
+        print(f"Action :::: {model.predict(echo_states_test)}")
+
+    # for multiple files
+
     # filepath_train = './dataset/MSRAction3D_real_world_P4_Split_AS3_train.p'
     # filepath_test = './dataset/MSRAction3D_real_world_P4_Split_AS3_test.p'
-    filepath_train = args.input_folder + '/MSRAction3D_real_world_P4_Split_AS' + args.split_number + '_train.p'
-    filepath_test = args.input_folder + '/MSRAction3D_real_world_P4_Split_AS' + args.split_number + '_test.p'
+    filepath_train = args.input + '/MSRAction3D_real_world_P4_Split_AS' + args.split_number + '_train.p'
+    filepath_test = args.input + '/MSRAction3D_real_world_P4_Split_AS' + args.split_number + '_test.p'
 
     # load data
     skeletons_train, labels_train = get_data(filepath_train)
@@ -86,8 +102,6 @@ if __name__ == "__main__":
     SR = 0.9
     sparsity = 0.3
     leakyrate = 1.0
-
-    total_reservoirs = 5
 
     reservoirs = []
     if args.train:

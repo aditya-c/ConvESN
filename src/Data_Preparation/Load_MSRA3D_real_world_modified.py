@@ -5,29 +5,133 @@ Example - "a01_s01_e01_skeleton.txt"
 >>> each subject performs each action 2 or 3 times
 """
 import os
-import csv
 from numpy import *
 import numpy as np
-import matplotlib.pyplot as plt
 import pickle
-import random
 import argparse
+import sys
 
 SKELETON_SUFFIX = "skeleton_action"
+
+
+def load_test_file(fileName):
+    frameMat, max_sample_frames = parse_skeleton_file(fileName)
+    flag_splite5parts = True
+    if flag_splite5parts:
+        sample = np.array(frameMat)
+        nums_frames = sample.shape[0]
+
+        Frames_left_hand = []
+        Frames_right_hand = []
+        Frames_left_leg = []
+        Frames_right_leg = []
+        Frames_central_trunk = []
+
+        for j in range(nums_frames):
+
+            left_hand_joint = []
+            for k in [1, 8, 10, 12]:
+                left_hand_joint.extend(list(sample[j][(k - 1) * 3:k * 3]))
+
+            right_hand_joint = []
+            for k in [2, 9, 11, 13]:
+                right_hand_joint.extend(list(sample[j][(k - 1) * 3:k * 3]))
+
+            left_leg_joint = []
+            for k in [5, 14, 16, 18]:
+                left_leg_joint.extend(list(sample[j][(k - 1) * 3:k * 3]))
+
+            right_leg_joint = []
+            for k in [6, 15, 17, 19]:
+                right_leg_joint.extend(list(sample[j][(k - 1) * 3:k * 3]))
+
+            central_trunk_joint = []
+            for k in [20, 3, 4, 7]:
+                central_trunk_joint.extend(list(sample[j][(k - 1) * 3:k * 3]))
+
+            Frames_left_hand.append(left_hand_joint)
+            Frames_right_hand.append(right_hand_joint)
+            Frames_left_leg.append(left_leg_joint)
+            Frames_right_leg.append(right_leg_joint)
+            Frames_central_trunk.append(central_trunk_joint)
+
+        Samples_left_hand.append(Frames_left_hand)
+        Samples_right_hand.append(Frames_right_hand)
+        Samples_left_leg.append(Frames_left_leg)
+        Samples_right_leg.append(Frames_right_leg)
+        Samples_central_trunk.append(Frames_central_trunk)
+
+    results = np.array([Frames_left_hand]), np.array([Frames_right_hand]), np.array([Frames_left_leg]), \
+        np.array([Frames_right_leg]), np.array([Frames_central_trunk]), np.array([0]), max_sample_frames
+
+    return results
+
+
+def parse_skeleton_file(fileName):
+    print("Processing file :::: {}".format(fileName))
+    max_frames = 0
+    flag_normalize = True
+    frameMat = None
+    nums_skeleton = 20
+    if os.path.exists(fileName):
+        fr = open(fileName)
+        frameMat = []
+        jointMat = []
+        for line in fr.readlines():
+            lineArr = line.strip().split(' ')
+            jointMat.append([float(lineArr[0]), float(lineArr[1]), float(lineArr[2])])
+        nums_frame = np.shape(jointMat)[0] / nums_skeleton
+        for i in range(int(nums_frame)):
+            mat_frame = []
+            for j in range(nums_skeleton):
+                index = i * nums_skeleton + j
+                mat_frame.extend(jointMat[index])
+            frameMat.append(mat_frame)
+        frameMat = np.array(frameMat)
+
+        n_frames, n_features = frameMat.shape
+        temp = frameMat
+        frameMat_temp = np.zeros((n_frames - 4, n_features))
+
+        # Savitzky-Golay smoothing filter
+        for i in range(2, n_frames - 2):
+            frameMat_temp[i - 2, :] = (-3 * temp[i - 2, :] + 12 * temp[i - 1, :] + 17 * temp[i, :] + 12 * temp[i + 1, :] - 3 * temp[i + 2, :]) / 35
+        frameMat = frameMat_temp
+        n_frames, n_features = frameMat.shape
+
+        max_frames = max(max_frames, n_frames)
+
+        # Centralization
+        temp = frameMat
+        frameMat_temp = np.zeros((n_frames, n_features))
+        for i in range(n_frames):
+            Origin = (temp[i, 12:15] + temp[i, 15:18] + temp[i, 18:21]) / 3
+            for j in range(nums_skeleton):
+                index = 3 * j
+                frameMat_temp[i, index] = temp[i, index] - Origin[0]
+                frameMat_temp[i, index + 1] = temp[i, index + 1] - Origin[1]
+                frameMat_temp[i, index + 2] = temp[i, index + 2] - Origin[2]
+
+        # Normalization
+        frameMat = frameMat_temp
+        if flag_normalize:
+            for j in range(n_features):
+                frameMat[:, j] = frameMat[:, j] - mean(frameMat[:, j])
+
+    return frameMat, max_frames
 
 
 def load_MSRA3D_P4(filepath, params):
     global SKELETON_SUFFIX
 
     print("Loading Skeleton data sets MSRA3D....")
-    flag_normalize = True
+
     Samples = []
     Labels = []
     action_type = params[0]
     subjects = params[1]
     times = params[2]
 
-    nums_skeleton = 20
     max_frames = 0
 
     for a in action_type:
@@ -35,56 +139,11 @@ def load_MSRA3D_P4(filepath, params):
             for t in times:
                 # load each sample
                 fileName = filepath + "/" + 'a{:02d}_s{:02d}_e{:02d}_{}.txt'.format(a, s, t, SKELETON_SUFFIX)
-                print("Processing file a{:02d}_s{:02d}_e{:02d}_{}.txt ..........".format(a, s, t, SKELETON_SUFFIX))
-                flag = os.path.exists(fileName)
-                if flag == True:
-                    fr = open(fileName)
-                    frameMat = []
-                    jointMat = []
-                    for line in fr.readlines():
-                        lineArr = line.strip().split(' ')
-                        jointMat.append([float(lineArr[0]), float(lineArr[1]), float(lineArr[2])])
-                    nums_frame = np.shape(jointMat)[0] / nums_skeleton
-                    for i in range(int(nums_frame)):
-                        mat_frame = []
-                        for j in range(nums_skeleton):
-                            index = i * nums_skeleton + j
-                            mat_frame.extend(jointMat[index])
-                        frameMat.append(mat_frame)
-                    frameMat = np.array(frameMat)
-
-                    n_frames, n_features = frameMat.shape
-                    temp = frameMat
-                    frameMat_temp = np.zeros((n_frames - 4, n_features))
-
-                    # Savitzky-Golay smoothing filter
-                    for i in range(2, n_frames - 2):
-                        frameMat_temp[i - 2, :] = (-3 * temp[i - 2, :] + 12 * temp[i - 1, :] + 17 * temp[i, :] + 12 * temp[i + 1, :] - 3 * temp[i + 2, :]) / 35
-                    frameMat = frameMat_temp
-                    n_frames, n_features = frameMat.shape
-
-                    if n_frames > max_frames:
-                        max_frames = n_frames
-
-                    # Centralization
-                    temp = frameMat
-                    frameMat_temp = np.zeros((n_frames, n_features))
-                    for i in range(n_frames):
-                        Origin = (temp[i, 12:15] + temp[i, 15:18] + temp[i, 18:21]) / 3
-                        for j in range(nums_skeleton):
-                            index = 3 * j
-                            frameMat_temp[i, index] = temp[i, index] - Origin[0]
-                            frameMat_temp[i, index + 1] = temp[i, index + 1] - Origin[1]
-                            frameMat_temp[i, index + 2] = temp[i, index + 2] - Origin[2]
-
-                    # Normalization
-                    frameMat = frameMat_temp
-                    if flag_normalize:
-                        for j in range(n_features):
-                            frameMat[:, j] = frameMat[:, j] - mean(frameMat[:, j])
-
+                frameMat, max_sample_frames = parse_skeleton_file(fileName)
+                if frameMat is not None:
                     Samples.append(frameMat)
                     Labels.extend([a - 1])
+                    max_frames = max(max_frames, max_sample_frames)
     Samples = np.array(Samples)
     flag_splite5parts = True
     if flag_splite5parts:
@@ -153,10 +212,20 @@ if __name__ == '__main__':
 
     # Required positional argument
     parser.add_argument('filepath', help='the path to the skeleton files')
+    parser.add_argument('--test', action='store_true')
+    parser.add_argument('--output', default="./data/DataBackUp/test.p", nargs="?")
 
     args = parser.parse_args()
 
     filepath = args.filepath
+
+    # if test is set, we process a single file
+    if args.test:
+        if args.output:
+            pickle.dump([load_test_file(filepath)], open(args.output, "wb"))
+        else:
+            print("you need to provide output file")
+        sys.exit(1)
     # example filepath = "./data/MSRAction3D_real_world"
     """
     In Protocol 4, the most widely adopted, cross-subject validation with subjects 1,3,5,7, and 9 for training, the others for test (HS-V
@@ -165,6 +234,9 @@ if __name__ == '__main__':
     AS1_a = [2, 3, 5, 6, 10, 13]
     AS2_a = [1, 4, 7, 8, 9, 11, 12, 14]
     AS3_a = [6, 14, 15, 16]
+
+    # split 4 will contain all of them
+    AS4_a = list(range(1, 16 + 1))
 
     suject_train = [1, 3, 5, 7, 9]
     suject_test = [2, 4, 6, 8, 10]
@@ -176,6 +248,10 @@ if __name__ == '__main__':
     AS2_test_params = [AS2_a, suject_test, [1, 2, 3]]
     AS3_test_params = [AS3_a, suject_test, [1, 2, 3]]
 
+    # split 4 will contain all of them
+    AS4_train_params = [AS4_a, suject_train, [1, 2, 3]]
+    AS4_test_params = [AS4_a, suject_test, [1, 2, 3]]
+
     max_frames = [0 for i in range(6)]
 
     [AS1_train_left_hand, AS1_train_right_hand, AS1_train_left_leg, AS1_train_right_leg, AS1_train_central_trunk, AS1_train_Labels, max_frames[0]] = load_MSRA3D_P4(filepath, AS1_train_params)
@@ -186,6 +262,10 @@ if __name__ == '__main__':
     [AS2_test_left_hand, AS2_test_right_hand, AS2_test_left_leg, AS2_test_right_leg, AS2_test_central_trunk, AS2_test_Labels, max_frames[4]] = load_MSRA3D_P4(filepath, AS2_test_params)
     [AS3_test_left_hand, AS3_test_right_hand, AS3_test_left_leg, AS3_test_right_leg, AS3_test_central_trunk, AS3_test_Labels, max_frames[5]] = load_MSRA3D_P4(filepath, AS3_test_params)
 
+    # split 4 will contain all of them
+    AS4_train_data = load_MSRA3D_P4(filepath, AS4_train_params)
+    AS4_test_data = load_MSRA3D_P4(filepath, AS4_test_params)
+
     flag_created = True
     if flag_created:
         pickle.dump([AS1_train_left_hand, AS1_train_right_hand, AS1_train_left_leg, AS1_train_right_leg, AS1_train_central_trunk, AS1_train_Labels, max_frames[0]], open("./data/DataBackUp/MSRAction3D_real_world_P4_Split_AS1_train.p", "wb"))
@@ -194,4 +274,9 @@ if __name__ == '__main__':
         pickle.dump([AS1_test_left_hand, AS1_test_right_hand, AS1_test_left_leg, AS1_test_right_leg, AS1_test_central_trunk, AS1_test_Labels, max_frames[3]], open("./data/DataBackUp/MSRAction3D_real_world_P4_Split_AS1_test.p", "wb"))
         pickle.dump([AS2_test_left_hand, AS2_test_right_hand, AS2_test_left_leg, AS2_test_right_leg, AS2_test_central_trunk, AS2_test_Labels, max_frames[4]], open("./data/DataBackUp/MSRAction3D_real_world_P4_Split_AS2_test.p", "wb"))
         pickle.dump([AS3_test_left_hand, AS3_test_right_hand, AS3_test_left_leg, AS3_test_right_leg, AS3_test_central_trunk, AS3_test_Labels, max_frames[5]], open("./data/DataBackUp/MSRAction3D_real_world_P4_Split_AS3_test.p", "wb"))
+
+        # split 4 will contain all of them
+        pickle.dump(AS4_train_data, open("./data/DataBackUp/MSRAction3D_real_world_P4_Split_AS4_train.p", "wb"))
+        pickle.dump(AS4_test_data, open("./data/DataBackUp/MSRAction3D_real_world_P4_Split_AS4_test.p", "wb"))
+
         print("Dataset created!")

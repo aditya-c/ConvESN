@@ -15,10 +15,11 @@ the skeleton data files for daily acitivity dataset need to be saved at data/MSR
 python src/Data_Preparation/daily_activity_skeletons_to_msr_actions.py ./data/MSRDailyAct3D/ ./data/modified/ --folder
 
 python src/Data_Preparation/Load_MSRA3D_real_world_modified.py ./data/modified/
+# if you pass --test, the you need to set -output and this is for handling one file
 
 python src/Data_Preparation/Padding.py ./data/DataBackUp ./data/padded/
 
-python src/ConvESN_MSMC.py ./data/padded/ 1 --fit_model
+## deprecated command :: python src/ConvESN_MSMC.py ./data/padded/ 1 --fit_model
 
 
 
@@ -31,4 +32,6 @@ python src/Data_Preparation/plot_dailyactivity3d_skeleton.py $x
 
 
 # run code with
-python src/MSMC_sai.py ./data/padded/ 1 -checkpoint check_points/test.hdf5 -reservoir reservoir/rs100.pkl
+python src/MSMC_sai.py ./data/padded/ -split_number 1 -checkpoint check_points/test.hdf5 -reservoir reservoir/rs100.pkl --train
+# if u dont give --train, it will test
+# if u give --test_sample, it will work on a single file
