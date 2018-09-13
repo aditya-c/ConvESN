@@ -1,0 +1,12 @@
+# Project data to ignore
+data
+logs
+check_points
+reservoir
+
+# Personal
+*.ipynb*
+
+# OS Stuff
+*.DS_Store
+__pycache__

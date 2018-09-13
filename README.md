@@ -27,3 +27,8 @@ x="./data/MSRDailyAct3D/a13_s06_e01_skeleton.txt"
 python src/Data_Preparation/daily_activity_skeletons_to_msr_actions.py $x ./data/test/
 
 python src/Data_Preparation/plot_dailyactivity3d_skeleton.py $x
+
+
+
+# run code with
+python src/MSMC_sai.py ./data/padded/ 1 -checkpoint check_points/test.hdf5 -reservoir reservoir/rs100.pkl
