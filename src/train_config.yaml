@@ -1,0 +1,33 @@
+### Input Data ###
+  input: "./data/padded"
+  # location of the padded skeleton data
+  split_number: 1
+  # choose the split number from the padded files
+
+
+### Save Locations ###
+
+  reservoir_file: "reservoir/reservoir_test.pkl"
+  # save reservoir along with model
+  checkpoint_file: "check_points/weights-improvement_test.hdf5"
+  # name of checkpoint file (save to/ load from)
+
+
+### train ###
+  train: yes
+  # trains a model if set to true
+  nb_epochs: 25
+  # number of epochs
+  batch_size: 8
+
+
+### Model Attributes ###
+  IS: 0.1
+  SR: 0.9
+  sparsity: 0.3
+  leakyrate: 1.0
+
+
+### test ###
+  test_sample: no
+  # predicts if yes, on the input (which should be a sample skeleton file)

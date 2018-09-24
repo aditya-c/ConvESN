@@ -1,6 +1,6 @@
 import numpy as np
 import pickle
-import argparse
+import yaml
 import sys
 from time import time
 
@@ -55,28 +55,33 @@ def print_shapes(skeletons_data, annotation="train"):
 
 if __name__ == "__main__":
     total_reservoirs = 5
-    # parse arguments
-    args = parse_args()
+    # load config file
+    if sys.argv[1]:
+        with open(sys.argv[1]) as f:
+            args = yaml.safe_load(f)
+    else:
+        print("missing param :: Config File")
+        return
 
-    if args.test_sample:
+    if args['test_sample']:
         print("Setting Up")
-        skeletons, _ = get_data(args.input)
+        skeletons, _ = get_data(args['input'])
         _, time_length, n_in = skeletons[0].shape
-        with open(args.reservoir, 'rb') as f:
+        with open(args['reservoir'], 'rb') as f:
             reservoirs = pickle.load(f)
         echo_states_test = [np.empty((1, 1, time_length, n_in * 3), np.float32) for i in range(5)]
         for i in range(total_reservoirs):
             echo_states_test[i][:, 0, :, :] = reservoirs[i].get_echo_states(skeletons[i])
         echo_states_test = [np.concatenate(echo_states_test[0:2], axis=1), np.concatenate(echo_states_test[2:4], axis=1), echo_states_test[4]]
-        model = load_model(args.checkpoint)
+        model = load_model(args["checkpoint"])
         print(f"Action :::: {model.predict(echo_states_test)}")
 
     # for multiple files
 
     # filepath_train = './dataset/MSRAction3D_real_world_P4_Split_AS3_train.p'
     # filepath_test = './dataset/MSRAction3D_real_world_P4_Split_AS3_test.p'
-    filepath_train = args.input + '/MSRAction3D_real_world_P4_Split_AS' + args.split_number + '_train.p'
-    filepath_test = args.input + '/MSRAction3D_real_world_P4_Split_AS' + args.split_number + '_test.p'
+    filepath_train = args["input"] + '/MSRAction3D_real_world_P4_Split_AS' + args["split_number"] + '_train.p'
+    filepath_test = args["input"] + '/MSRAction3D_real_world_P4_Split_AS' + args["split_number"] + '_test.p'
 
     # load data
     skeletons_train, labels_train = get_data(filepath_train)
@@ -104,13 +109,13 @@ if __name__ == "__main__":
     leakyrate = 1.0
 
     reservoirs = []
-    if args.train:
+    if args["train"]:
         # create five different reservoirs, one for a skeleton part
         reservoirs = [reservoir.reservoir_layer(n_in, n_res, IS, SR, sparsity, leakyrate) for i in range(total_reservoirs)]
-        with open(args.reservoir, 'wb') as f:
+        with open(args["reservoir"], 'wb') as f:
             pickle.dump(reservoirs, f)
     else:
-        with open(args.reservoir, 'rb') as f:
+        with open(args["reservoir"], 'rb') as f:
             reservoirs = pickle.load(f)
 
     print('Getting echo states...')
@@ -141,7 +146,7 @@ if __name__ == "__main__":
     nb_epoch = 50
     verbose = 1
 
-    if args.train:
+    if args["train"]:
 
         # build the MSMC decoder model
         inputs = []
@@ -174,13 +179,13 @@ if __name__ == "__main__":
 
         tensorboard = TensorBoard(log_dir="logs/test_{}".format(time()), histogram_freq=0, batch_size=32, write_graph=True, write_grads=False, write_images=False, embeddings_freq=0, embeddings_layer_names=None, embeddings_metadata=None, embeddings_data=None)
 
-        checkpoint = ModelCheckpoint(args.checkpoint, monitor='val_acc', verbose=1, save_best_only=True, mode='max')
+        checkpoint = ModelCheckpoint(args["checkpoint"], monitor='val_acc', verbose=1, save_best_only=True, mode='max')
         callbacks_list = [checkpoint, tensorboard]
 
         model.fit(echo_states_train, labels_train, batch_size=batch_size, epochs=nb_epoch, verbose=verbose, validation_data=(echo_states_test, labels_test), callbacks=callbacks_list)
 
     try:
-        model = load_model(args.checkpoint)
+        model = load_model(args["checkpoint"])
     except OSError as err:
         print("OS error: {0}".format(err))
         sys.exit(1)

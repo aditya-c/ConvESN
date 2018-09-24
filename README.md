@@ -35,3 +35,6 @@ python src/Data_Preparation/plot_dailyactivity3d_skeleton.py $x
 python src/MSMC_sai.py ./data/padded/ -split_number 1 -checkpoint check_points/test.hdf5 -reservoir reservoir/rs100.pkl --train
 # if u dont give --train, it will test
 # if u give --test_sample, it will work on a single file
+
+# Tensorboard visulization
+tensorboard --logdir ./logs
