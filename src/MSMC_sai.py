@@ -138,8 +138,8 @@ if __name__ == "__main__":
 
     optimizer = 'adam'
     batch_size = 8
-    nb_epoch = 40
-    verbose = 0
+    nb_epoch = 100
+    verbose = 1
 
     if args.train:
 
@@ -195,3 +195,10 @@ if __name__ == "__main__":
     print("parameters :::", model.count_params())
     # print("summary :::", model.summary())
     # print(confusion_matrix(labels_test, labels_test_pred))
+
+    with open("results.txt", "a+") as f:
+        print("With reservoir", file=f)
+        print("nb_epoch : {}, optimizer : {}, n_res : {}".format(nb_epoch, optimizer, n_res), file=f)
+        print("{}: {} and loss is {}".format(model.metrics_names[1], scores[1] * 100, scores[0]), file=f)
+        print("parameters :::", model.count_params(), file=f)
+        print("*" * 15, file=f)

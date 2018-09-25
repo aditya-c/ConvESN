@@ -122,9 +122,7 @@ if __name__ == "__main__":
     echo_states_train = [np.concatenate(echo_states_train[0:2], axis=1), np.concatenate(echo_states_train[2:4], axis=1), echo_states_train[4]]
     echo_states_test = [np.concatenate(echo_states_test[0:2], axis=1), np.concatenate(echo_states_test[2:4], axis=1), echo_states_test[4]]
 
-    print("echo state shapes")
-    print_shapes(echo_states_train)
-    print_shapes(echo_states_test, "test")
+    # skeletons reshape to use a input to model
 
     skeletons_train_ = [np.expand_dims(x, 1) for x in skeletons_train]
     skeletons_test_ = [np.expand_dims(x, 1) for x in skeletons_test]
@@ -132,10 +130,6 @@ if __name__ == "__main__":
     skeletons_train_ = [np.concatenate(skeletons_train_[0:2], axis=1), np.concatenate(skeletons_train_[2:4], axis=1), skeletons_train_[4]]
 
     skeletons_test_ = [np.concatenate(skeletons_test_[0:2], axis=1), np.concatenate(skeletons_test_[2:4], axis=1), skeletons_test_[4]]
-
-    print("Skeletons")
-    print_shapes(skeletons_train_, "train")
-    print_shapes(skeletons_test_, "test")
 
     """
     set parameters of convolution layers and build the MSSC decoder model
@@ -154,8 +148,8 @@ if __name__ == "__main__":
 
     optimizer = 'adam'
     batch_size = 8
-    nb_epoch = 40
-    verbose = 0
+    nb_epoch = 100
+    verbose = 1
 
     if args.train:
 
@@ -190,7 +184,7 @@ if __name__ == "__main__":
 
         tensorboard = TensorBoard(log_dir="logs/test_{}".format(time()), histogram_freq=0, batch_size=32, write_graph=True, write_grads=False, write_images=False, embeddings_freq=0, embeddings_layer_names=None, embeddings_metadata=None)
 
-        checkpoint = ModelCheckpoint(args.checkpoint, monitor='val_acc', verbose=1, save_best_only=True, mode='max')
+        checkpoint = ModelCheckpoint(args.checkpoint, monitor='val_acc', verbose=verbose, save_best_only=True, mode='max')
         callbacks_list = [checkpoint, tensorboard]
 
         # model.fit(echo_states_train, labels_train, batch_size=batch_size, epochs=nb_epoch, verbose=verbose, validation_data=(echo_states_test, labels_test), callbacks=callbacks_list)
@@ -214,3 +208,9 @@ if __name__ == "__main__":
     print("parameters :::", model.count_params())
     # print("summary :::", model.summary())
     # print(confusion_matrix(labels_test, labels_test_pred))
+    with open("results.txt", "a+") as f:
+        print("No reservoir", file=f)
+        print("nb_epoch : {}, optimizer : {}".format(nb_epoch, optimizer), file=f)
+        print("{}: {} and loss is {}".format(model.metrics_names[1], scores[1] * 100, scores[0]), file=f)
+        print("parameters :::", model.count_params(), file=f)
+        print("*" * 15, file=f)
