@@ -6,7 +6,7 @@ This now works with MSRDailyActivity dataset.
 we saved all the skeleton data files from the MSRDailyActivity dataset at ./data
 
 # data setup
-mkdir data && cd data && mkdir DataBackUp MSRDailyAct3D padded modified
+mkdir data reservoir check_points && cd data && mkdir DataBackUp MSRDailyAct3D padded modified
 
 the skeleton data files for daily acitivity dataset need to be saved at data/MSRDailyAct3D/
 

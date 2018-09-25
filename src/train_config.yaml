@@ -1,5 +1,7 @@
 ### Input Data ###
-  input: "./data/padded"
+
+  input_train_file: "./data/padded/MSRAction3D_real_world_P4_Split_AS1_train.p"
+  input_test_file: "./data/padded/MSRAction3D_real_world_P4_Split_AS1_test.p"
   # location of the padded skeleton data
   split_number: 1
   # choose the split number from the padded files
@@ -14,20 +16,43 @@
 
 
 ### train ###
+
   train: yes
   # trains a model if set to true
-  nb_epochs: 25
+  nb_epochs: 10
   # number of epochs
   batch_size: 8
 
+### test ###
+
+  test_sample: no
+  # predicts on a sample if yes
+  sample_location : no
+
 
 ### Model Attributes ###
+
   IS: 0.1
   SR: 0.9
   sparsity: 0.3
   leakyrate: 1.0
 
+  nb_filter : 16
+  nb_row :
+    - 2
+    - 3
+    - 4
+    # time scales
+  expansion_factor : 3
+  kernel_initializer : 'lecun_uniform'
+  activation : 'relu'
+  padding : 'valid'
+  strides :
+    - 1
+    - 1
+  data_format : 'channels_first'
 
-### test ###
-  test_sample: no
-  # predicts if yes, on the input (which should be a sample skeleton file)
+  optimizer : 'adam'
+  batch_size : 8
+  nb_epoch : 50
+  verbose : 1

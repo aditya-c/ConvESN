@@ -1,0 +1,3 @@
+##### HOW ???? #####
+
+    # recurrent weight matrix

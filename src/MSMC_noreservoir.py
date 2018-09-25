@@ -97,7 +97,7 @@ if __name__ == "__main__":
     num_samples_test = labels_test.shape[0]
 
     _, time_length, n_in = skeletons_train[0].shape
-    n_res = n_in
+    n_res = n_in * 3
     IS = 0.1
     SR = 0.9
     sparsity = 0.3
@@ -122,9 +122,25 @@ if __name__ == "__main__":
     echo_states_train = [np.concatenate(echo_states_train[0:2], axis=1), np.concatenate(echo_states_train[2:4], axis=1), echo_states_train[4]]
     echo_states_test = [np.concatenate(echo_states_test[0:2], axis=1), np.concatenate(echo_states_test[2:4], axis=1), echo_states_test[4]]
 
+    print("echo state shapes")
+    print_shapes(echo_states_train)
+    print_shapes(echo_states_test, "test")
+
+    skeletons_train_ = [np.expand_dims(x, 1) for x in skeletons_train]
+    skeletons_test_ = [np.expand_dims(x, 1) for x in skeletons_test]
+
+    skeletons_train_ = [np.concatenate(skeletons_train_[0:2], axis=1), np.concatenate(skeletons_train_[2:4], axis=1), skeletons_train_[4]]
+
+    skeletons_test_ = [np.concatenate(skeletons_test_[0:2], axis=1), np.concatenate(skeletons_test_[2:4], axis=1), skeletons_test_[4]]
+
+    print("Skeletons")
+    print_shapes(skeletons_train_, "train")
+    print_shapes(skeletons_test_, "test")
+
     """
     set parameters of convolution layers and build the MSSC decoder model
     """
+    n_res = n_in
     input_shapes = ((2, time_length, n_res), (2, time_length, n_res), (1, time_length, n_res))
 
     nb_filter = 16
@@ -174,10 +190,12 @@ if __name__ == "__main__":
 
         tensorboard = TensorBoard(log_dir="logs/test_{}".format(time()), histogram_freq=0, batch_size=32, write_graph=True, write_grads=False, write_images=False, embeddings_freq=0, embeddings_layer_names=None, embeddings_metadata=None)
 
-        checkpoint = ModelCheckpoint(args.checkpoint, monitor='val_acc', verbose=verbose, save_best_only=True, mode='max')
+        checkpoint = ModelCheckpoint(args.checkpoint, monitor='val_acc', verbose=1, save_best_only=True, mode='max')
         callbacks_list = [checkpoint, tensorboard]
 
-        model.fit(echo_states_train, labels_train, batch_size=batch_size, epochs=nb_epoch, verbose=verbose, validation_data=(echo_states_test, labels_test), callbacks=callbacks_list)
+        # model.fit(echo_states_train, labels_train, batch_size=batch_size, epochs=nb_epoch, verbose=verbose, validation_data=(echo_states_test, labels_test), callbacks=callbacks_list)
+
+        model.fit(skeletons_train_, labels_train, batch_size=batch_size, epochs=nb_epoch, verbose=verbose, validation_data=(skeletons_test_, labels_test), callbacks=callbacks_list)
 
     try:
         model = load_model(args.checkpoint)
@@ -186,10 +204,11 @@ if __name__ == "__main__":
         sys.exit(1)
 
     print("==Evaluating==")
-    scores = model.evaluate(echo_states_test, labels_test, batch_size=batch_size, verbose=verbose)
+    # scores = model.evaluate(echo_states_test, labels_test, batch_size=batch_size, verbose=verbose)
+    scores = model.evaluate(skeletons_test_, labels_test, batch_size=batch_size, verbose=verbose)
     print("{}: {} and loss is {}".format(model.metrics_names[1], scores[1] * 100, scores[0]))
 
-    labels_test_pred = model.predict(echo_states_test)
+    labels_test_pred = model.predict(skeletons_test_)
 
     print(labels_test.shape, labels_test_pred.shape)
     print("parameters :::", model.count_params())

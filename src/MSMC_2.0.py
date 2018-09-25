@@ -9,30 +9,10 @@ from keras.layers import Input, Dense, concatenate
 from keras.layers import Conv2D, GlobalMaxPooling2D
 from keras.callbacks import TensorBoard, ModelCheckpoint
 
-import reservoir_sai as reservoir
+import reservoir
 import utils
 
-
-def parse_args():
-    """
-    returns {input, split_number, train}
-    """
-    # Instantiate the parser
-    parser = argparse.ArgumentParser(description='ConvESN_MSMC')
-
-    # location of the padded skeleton data
-    parser.add_argument('input', default='./data/padded', help='the skeleton data folder/ test file name')
-    # choose the split number from the padded files
-    parser.add_argument('-split_number', nargs='?', default='1', help='split number to use')
-    # trains a model if set to true
-    parser.add_argument('--train', action='store_true')
-    # name of checkpoint file (save to/ load from)
-    parser.add_argument('-checkpoint', default='check_points/weights-improvement_test.hdf5', nargs='?', help="name of checkpoint file to load/save")
-    # save reservoir along with model
-    parser.add_argument('-reservoir', default='reservoir/reservoir_test.pkl', nargs='?', help="name of checkpoint file to load/save")
-    parser.add_argument('-test_sample', action='store_true')
-
-    return parser.parse_args()
+total_reservoirs = 5
 
 
 def get_data(filename):
@@ -49,76 +29,58 @@ def get_data(filename):
 
 
 def print_shapes(skeletons_data, annotation="train"):
+    """
+    print shape of list of np objects
+    ex: print_shapes(skeletons_test, "test")
+    """
     for skeleton in skeletons_data:
         print(annotation, "::::", skeleton.shape)
 
 
-if __name__ == "__main__":
-    total_reservoirs = 5
-    # load config file
-    if sys.argv[1]:
-        with open(sys.argv[1]) as f:
-            args = yaml.safe_load(f)
-    else:
-        print("missing param :: Config File")
-        return
+def predict_sample(args):
+    print("Setting Up")
+    skeletons, _ = get_data(args['input'])
+    _, time_length, n_in = skeletons[0].shape
+    with open(args['reservoir_file'], 'rb') as f:
+        reservoirs = pickle.load(f)
+    echo_states_test = [np.empty((1, 1, time_length, n_in * 3), np.float32) for i in range(5)]
+    for i in range(total_reservoirs):
+        echo_states_test[i][:, 0, :, :] = reservoirs[i].get_echo_states(skeletons[i])
+    echo_states_test = [np.concatenate(echo_states_test[0:2], axis=1), np.concatenate(echo_states_test[2:4], axis=1), echo_states_test[4]]
+    model = load_model(args["checkpoint_file"])
+    print(f"Action :::: {model.predict(echo_states_test)}")
 
-    if args['test_sample']:
-        print("Setting Up")
-        skeletons, _ = get_data(args['input'])
-        _, time_length, n_in = skeletons[0].shape
-        with open(args['reservoir'], 'rb') as f:
-            reservoirs = pickle.load(f)
-        echo_states_test = [np.empty((1, 1, time_length, n_in * 3), np.float32) for i in range(5)]
-        for i in range(total_reservoirs):
-            echo_states_test[i][:, 0, :, :] = reservoirs[i].get_echo_states(skeletons[i])
-        echo_states_test = [np.concatenate(echo_states_test[0:2], axis=1), np.concatenate(echo_states_test[2:4], axis=1), echo_states_test[4]]
-        model = load_model(args["checkpoint"])
-        print(f"Action :::: {model.predict(echo_states_test)}")
 
-    # for multiple files
-
-    # filepath_train = './dataset/MSRAction3D_real_world_P4_Split_AS3_train.p'
-    # filepath_test = './dataset/MSRAction3D_real_world_P4_Split_AS3_test.p'
-    filepath_train = args["input"] + '/MSRAction3D_real_world_P4_Split_AS' + args["split_number"] + '_train.p'
-    filepath_test = args["input"] + '/MSRAction3D_real_world_P4_Split_AS' + args["split_number"] + '_test.p'
-
+def run_MSR_MSMC(args):
     # load data
-    skeletons_train, labels_train = get_data(filepath_train)
-    skeletons_test, labels_test = get_data(filepath_test)
-
-    # print shapes
-    # print_shapes(skeletons_train, "train")
-    # print_shapes(skeletons_test, "test")
+    skeletons_train, labels_train = get_data(args["input_train_file"])
+    skeletons_test, labels_test = get_data(args["input_test_file"])
 
     # one hot of labels
-    print('Transfering labels...')
     labels_train, labels_test, num_classes = utils.transfer_labels(labels_train, labels_test)
 
     """
     set parameters of reservoirs, create five reservoirs and get echo states of five skeleton parts
     """
-    num_samples_train = labels_train.shape[0]
-    num_samples_test = labels_test.shape[0]
+    num_samples_train, num_samples_test = labels_train.shape[0], labels_test.shape[0]
 
     _, time_length, n_in = skeletons_train[0].shape
-    n_res = n_in * 3
-    IS = 0.1
-    SR = 0.9
-    sparsity = 0.3
-    leakyrate = 1.0
+
+    n_res = n_in * args["expansion_factor"]
 
     reservoirs = []
     if args["train"]:
         # create five different reservoirs, one for a skeleton part
-        reservoirs = [reservoir.reservoir_layer(n_in, n_res, IS, SR, sparsity, leakyrate) for i in range(total_reservoirs)]
-        with open(args["reservoir"], 'wb') as f:
+        reservoirs = [reservoir.reservoir_layer(n_in, n_res, args["IS"], args["SR"], args["sparsity"], args["leakyrate"]) for i in range(total_reservoirs)]
+        with open(args["reservoir_file"], 'wb') as f:
             pickle.dump(reservoirs, f)
     else:
-        with open(args["reservoir"], 'rb') as f:
+        with open(args["reservoir_file"], 'rb') as f:
             reservoirs = pickle.load(f)
+            n_res = reservoirs[0].n_res
 
-    print('Getting echo states...')
+    if args["verbose"]:
+        print('Getting echo states...')
     echo_states_train = [np.empty((num_samples_train, 1, time_length, n_res), np.float32) for i in range(5)]
     echo_states_test = [np.empty((num_samples_test, 1, time_length, n_res), np.float32) for i in range(5)]
     for i in range(total_reservoirs):
@@ -132,20 +94,6 @@ if __name__ == "__main__":
     """
     input_shapes = ((2, time_length, n_res), (2, time_length, n_res), (1, time_length, n_res))
 
-    nb_filter = 16
-    nb_row = (2, 3, 4)  # time scales
-    nb_col = n_res
-    kernel_initializer = 'lecun_uniform'
-    activation = 'relu'
-    padding = 'valid'
-    strides = (1, 1)
-    data_format = 'channels_first'
-
-    optimizer = 'adam'
-    batch_size = 8
-    nb_epoch = 50
-    verbose = 1
-
     if args["train"]:
 
         # build the MSMC decoder model
@@ -156,9 +104,9 @@ if __name__ == "__main__":
             inputs.append(input)
 
             pools = []
-            for j in range(len(nb_row)):
-                conv = Conv2D(nb_filter, (nb_row[j], nb_col), kernel_initializer=kernel_initializer, activation=activation, padding=padding, strides=strides, data_format=data_format)(input)
-                pool = GlobalMaxPooling2D(data_format=data_format)(conv)
+            for j in range(len(args["nb_row"])):
+                conv = Conv2D(args["nb_filter"], (args["nb_row"][j], n_res), kernel_initializer=args["kernel_initializer"], activation=args["activation"], padding=args["padding"], strides=args["strides"], data_format=args["data_format"])(input)
+                pool = GlobalMaxPooling2D(data_format=args["data_format"])(conv)
                 pools.append(pool)
 
             features.append(concatenate(pools))
@@ -167,36 +115,54 @@ if __name__ == "__main__":
         hands_features = features[0]
         legs_features = features[1]
         trunk_features = features[2]
-        body_features = Dense(nb_filter * len(nb_row), kernel_initializer = kernel_initializer, activation = activation)(concatenate([hands_features, legs_features, trunk_features]))
+        body_features = Dense(args["nb_filter"] * len(args["nb_row"]), kernel_initializer = kernel_initializer, activation = activation)(concatenate([hands_features, legs_features, trunk_features]))
         """
-        body_features = Dense(nb_filter * len(nb_row), kernel_initializer=kernel_initializer, activation=activation)(concatenate(features))
+        body_features = Dense(args["nb_filter"] * len(args["nb_row"]), kernel_initializer=args["kernel_initializer"], activation=args["activation"])(concatenate(features))
 
-        outputs = Dense(num_classes, kernel_initializer=kernel_initializer, activation='softmax')(body_features)
+        outputs = Dense(num_classes, kernel_initializer=args["kernel_initializer"], activation='softmax')(body_features)
 
         model = Model(inputs=inputs, outputs=outputs)
 
-        model.compile(optimizer=optimizer, loss='categorical_crossentropy', metrics=['accuracy'])
+        model.compile(optimizer=args["optimizer"], loss='categorical_crossentropy', metrics=['accuracy'])
 
-        tensorboard = TensorBoard(log_dir="logs/test_{}".format(time()), histogram_freq=0, batch_size=32, write_graph=True, write_grads=False, write_images=False, embeddings_freq=0, embeddings_layer_names=None, embeddings_metadata=None, embeddings_data=None)
+        tensorboard = TensorBoard(log_dir="logs/test_{}".format(time()), histogram_freq=0, batch_size=args["batch_size"], write_graph=True, write_grads=False, write_images=True, embeddings_freq=0, embeddings_layer_names=None, embeddings_metadata=None)
 
-        checkpoint = ModelCheckpoint(args["checkpoint"], monitor='val_acc', verbose=1, save_best_only=True, mode='max')
+        checkpoint = ModelCheckpoint(args["checkpoint_file"], monitor='val_acc', verbose=args["verbose"], save_best_only=True, mode='max')
         callbacks_list = [checkpoint, tensorboard]
 
-        model.fit(echo_states_train, labels_train, batch_size=batch_size, epochs=nb_epoch, verbose=verbose, validation_data=(echo_states_test, labels_test), callbacks=callbacks_list)
+        model.fit(echo_states_train, labels_train, batch_size=args["batch_size"], epochs=args["nb_epochs"], verbose=args["verbose"], validation_data=(echo_states_test, labels_test), callbacks=callbacks_list)
 
     try:
-        model = load_model(args["checkpoint"])
+        model = load_model(args["checkpoint_file"])
     except OSError as err:
         print("OS error: {0}".format(err))
         sys.exit(1)
 
     print("==Evaluating==")
-    scores = model.evaluate(echo_states_test, labels_test, batch_size=batch_size, verbose=verbose)
+    scores = model.evaluate(echo_states_test, labels_test, batch_size=args["batch_size"], verbose=args["verbose"])
     print("{}: {} and loss is {}".format(model.metrics_names[1], scores[1] * 100, scores[0]))
 
     labels_test_pred = model.predict(echo_states_test)
 
-    print(labels_test.shape, labels_test_pred.shape)
     print("parameters :::", model.count_params())
     # print("summary :::", model.summary())
     # print(confusion_matrix(labels_test, labels_test_pred))
+
+
+def main():
+    # load config file
+    if sys.argv[1]:
+        with open(sys.argv[1]) as f:
+            args = yaml.safe_load(f)
+    else:
+        print("missing param :: Config File")
+        return
+
+    if args['test_sample']:
+        predict_sample(args)
+    else:
+        run_MSR_MSMC(args)
+
+
+if __name__ == "__main__":
+    main()
