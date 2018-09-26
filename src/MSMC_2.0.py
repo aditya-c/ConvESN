@@ -106,6 +106,7 @@ def run_MSR_MSMC(args):
         input_train, input_test = echo_states_train, echo_states_test
 
     else:
+        # else RESHAPE SKELETONS
         n_res = n_in
         skeletons_train_ = [np.expand_dims(x, 1) for x in skeletons_train]
         skeletons_test_ = [np.expand_dims(x, 1) for x in skeletons_test]
@@ -149,7 +150,7 @@ def run_MSR_MSMC(args):
         model.compile(optimizer=args["optimizer"], loss='categorical_crossentropy', metrics=['accuracy'])
 
         # CALLBACKS ####
-        log_file = args["log_dir"] + "/{}_res{}_com{}".format(get_time(), args["use_ESN"], args["common_reservoir_for_limbs"])
+        log_file = args["log_dir"] + "/{}_res{}_com{}_split{}".format(get_time(), args["use_ESN"], args["common_reservoir_for_limbs"], args["split_number"])
         tensorboard = TensorBoard(log_dir=log_file, histogram_freq=0, batch_size=args["batch_size"], write_graph=True, write_grads=False, write_images=True, embeddings_freq=0, embeddings_layer_names=None, embeddings_metadata=None)
         checkpoint = ModelCheckpoint(args["checkpoint_file"], monitor='val_acc', verbose=args["verbose"], save_best_only=True, mode='max')
         callbacks_list = [checkpoint, tensorboard]
@@ -178,6 +179,7 @@ def run_MSR_MSMC(args):
     # SAVE RANDOM STUFF ####
     with open(args["results_file"], "a+") as f:
         print("Reservoir :: {} @ {}".format(args["use_ESN"], get_time()), file=f)
+        print("Input file :: {}".format(args["input_train_file"]), file=f)
         if args["use_ESN"]:
             print("Common Limb Reservoir :: {}".format(args["common_reservoir_for_limbs"]), file=f)
         print("nb_epoch : {}, optimizer : {}, n_res : {}".format(args["nb_epochs"], args["optimizer"], n_res), file=f)

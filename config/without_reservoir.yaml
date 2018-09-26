@@ -1,10 +1,12 @@
 ### Input Data ###
 
-  input_train_file: "./data/padded/MSRAction3D_real_world_P4_Split_AS1_train.p"
-  input_test_file: "./data/padded/MSRAction3D_real_world_P4_Split_AS1_test.p"
+  input_train_file: "./data/padded/MSRAction3D_real_world_P4_Split_AS2_train.p"
+  input_test_file: "./data/padded/MSRAction3D_real_world_P4_Split_AS2_test.p"
   # location of the padded skeleton data
   save_results : yes
   # choose to save results
+  split_number : 2
+  # only serves as a marker on log files
 
 
 ### Save Locations ###
