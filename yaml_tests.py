@@ -5,7 +5,7 @@ import yaml
 DIR_PATH = os.path.dirname(os.path.realpath(__file__))
 print(os.path.realpath(__file__), DIR_PATH)
 env = Environment(loader=FileSystemLoader(DIR_PATH))
-template = env.get_template("train_config.yaml")
+template = env.get_template("config/train_config.yaml")
 c = template.render(n_res=10, val=10)
 # yaml :)
 config_vals = yaml.safe_load(c)

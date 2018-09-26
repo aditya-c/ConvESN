@@ -3,14 +3,20 @@ import pickle
 import argparse
 import sys
 from time import time
+from datetime import datetime
+
 
 from keras.models import Model, load_model
 from keras.layers import Input, Dense, concatenate
 from keras.layers import Conv2D, GlobalMaxPooling2D
 from keras.callbacks import TensorBoard, ModelCheckpoint
+from keras.utils.np_utils import to_categorical
 
 import reservoir
-import utils
+
+
+def get_time():
+    return datetime.datetime.utcnow().strftime('%Y-%m-%d %H:%M:%S.%f')[:-3]
 
 
 def parse_args():
@@ -53,6 +59,28 @@ def print_shapes(skeletons_data, annotation="train"):
         print(annotation, "::::", skeleton.shape)
 
 
+def transfer_labels(labels_train, labels_test):
+
+    indexes = np.unique(labels_train)
+    print(indexes)
+
+    num_classes = indexes.shape[0]
+    num_samples_train = labels_train.shape[0]
+    num_samples_test = labels_test.shape[0]
+
+    for i in range(num_samples_train):
+        new_label = np.argwhere(indexes == labels_train[i])[0][0]
+        labels_train[i] = new_label
+    labels_train = to_categorical(labels_train, num_classes)
+
+    for i in range(num_samples_test):
+        new_label = np.argwhere(indexes == labels_test[i])[0][0]
+        labels_test[i] = new_label
+    labels_test = to_categorical(labels_test, num_classes)
+
+    return labels_train, labels_test, num_classes
+
+
 if __name__ == "__main__":
     total_reservoirs = 5
     # parse arguments
@@ -83,12 +111,11 @@ if __name__ == "__main__":
     skeletons_test, labels_test = get_data(filepath_test)
 
     # print shapes
-    # print_shapes(skeletons_train, "train")
     # print_shapes(skeletons_test, "test")
 
     # one hot of labels
     print('Transfering labels...')
-    labels_train, labels_test, num_classes = utils.transfer_labels(labels_train, labels_test)
+    labels_train, labels_test, num_classes = transfer_labels(labels_train, labels_test)
 
     """
     set parameters of reservoirs, create five reservoirs and get echo states of five skeleton parts
@@ -138,7 +165,7 @@ if __name__ == "__main__":
 
     optimizer = 'adam'
     batch_size = 8
-    nb_epoch = 100
+    nb_epoch = 5
     verbose = 1
 
     if args.train:
@@ -197,7 +224,7 @@ if __name__ == "__main__":
     # print(confusion_matrix(labels_test, labels_test_pred))
 
     with open("results.txt", "a+") as f:
-        print("With reservoir", file=f)
+        print("With reservoir @ {}", file=f)
         print("nb_epoch : {}, optimizer : {}, n_res : {}".format(nb_epoch, optimizer, n_res), file=f)
         print("{}: {} and loss is {}".format(model.metrics_names[1], scores[1] * 100, scores[0]), file=f)
         print("parameters :::", model.count_params(), file=f)

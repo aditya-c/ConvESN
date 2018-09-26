@@ -3,8 +3,8 @@
   input_train_file: "./data/padded/MSRAction3D_real_world_P4_Split_AS1_train.p"
   input_test_file: "./data/padded/MSRAction3D_real_world_P4_Split_AS1_test.p"
   # location of the padded skeleton data
-  split_number: 1
-  # choose the split number from the padded files
+  save_results : yes
+  # choose to save results
 
 
 ### Save Locations ###
@@ -13,17 +13,21 @@
   # save reservoir along with model
   checkpoint_file: "check_points/weights-improvement_test.hdf5"
   # name of checkpoint file (save to/ load from)
+  results_file : "results_sep25.txt"
+  # save additional results to file (will be appended)
+  log_dir : "./logs"
+  # log directory
 
 
-### train ###
+### TRAIN ###
 
   train: yes
   # trains a model if set to true
-  nb_epochs: 10
+  nb_epochs: 100
   # number of epochs
   batch_size: 8
 
-### test ###
+### TEST ###
 
   test_sample: no
   # predicts on a sample if yes
@@ -31,6 +35,11 @@
 
 
 ### Model Attributes ###
+
+  use_ESN : yes
+  expansion_factor : 1
+
+  common_reservoir_for_limbs : yes
 
   IS: 0.1
   SR: 0.9
@@ -43,7 +52,6 @@
     - 3
     - 4
     # time scales
-  expansion_factor : 3
   kernel_initializer : 'lecun_uniform'
   activation : 'relu'
   padding : 'valid'
@@ -53,6 +61,4 @@
   data_format : 'channels_first'
 
   optimizer : 'adam'
-  batch_size : 8
-  nb_epoch : 50
   verbose : 1

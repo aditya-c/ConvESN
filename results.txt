@@ -1,9 +1,0 @@
-No reservoir
-nb_epoch : 40, optimizer : adam
-acc: 46.666666666666664 and loss is 1.6043824831644693
-parameters ::: 16038
-With reservoir
-nb_epoch : 10, optimizer : adam, n_res : 12
-acc: 50.0 and loss is 1.369935162862142
-parameters ::: 16038
-***************
