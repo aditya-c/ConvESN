@@ -38,7 +38,7 @@ def print_shapes(skeletons_data, annotation="train"):
 
 
 def get_time():
-    return datetime.utcnow().strftime('%Y-%m-%d %H:%M:%S.%f')[:-3]
+    return datetime.now().strftime('%Y-%m-%d %H:%M:%S.%f')[:-3]
 
 
 def predict_sample(args):

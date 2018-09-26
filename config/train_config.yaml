@@ -9,11 +9,11 @@
 
 ### Save Locations ###
 
-  reservoir_file: "reservoir/reservoir_test.pkl"
+  reservoir_file: "reservoir/reservoir_default.pkl"
   # save reservoir along with model
-  checkpoint_file: "check_points/weights-improvement_test.hdf5"
+  checkpoint_file: "check_points/checkpoint_default.hdf5"
   # name of checkpoint file (save to/ load from)
-  results_file : "results_sep25.txt"
+  results_file : "results/results_sep25_default.txt"
   # save additional results to file (will be appended)
   log_dir : "./logs"
   # log directory

@@ -9,11 +9,11 @@
 
 ### Save Locations ###
 
-  reservoir_file: "reservoir/reservoir_test.pkl"
+  reservoir_file: "reservoir/no_reservoir_default.pkl"
   # save reservoir along with model
-  checkpoint_file: "check_points/weights-improvement_test.hdf5"
+  checkpoint_file: "check_points/checkpoint_no_reservoir_default.hdf5"
   # name of checkpoint file (save to/ load from)
-  results_file : "results_sep25.txt"
+  results_file : "results/results_sep25_no_reservoir.txt"
   # save additional results to file (will be appended)
   log_dir : "./logs"
   # log directory
@@ -37,7 +37,9 @@
 ### Model Attributes ###
 
   use_ESN : no
-  expansion_factor : 3
+  expansion_factor : 1
+
+  common_reservoir_for_limbs : no
 
   IS: 0.1
   SR: 0.9
