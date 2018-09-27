@@ -37,7 +37,7 @@ python src/MSMC_sai.py ./data/padded/ -split_number 1 -checkpoint check_points/t
 # if u give --test_sample, it will work on a single file
 
 # 2.0 code run
-python src/MSMC_2.0.py config/train_config.yaml
+python src/MSMC_2_0.py config/train_config.yaml
 
 # Tensorboard visulization
 tensorboard --logdir ./logs

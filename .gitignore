@@ -1,6 +1,6 @@
 # Project data to ignore
 data
-logs
+logs*
 check_points
 reservoir
 

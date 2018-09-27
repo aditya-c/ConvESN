@@ -55,6 +55,7 @@ def predict_sample(args):
     echo_states_test = [np.concatenate(echo_states_test[0:2], axis=1), np.concatenate(echo_states_test[2:4], axis=1), echo_states_test[4]]
     model = load_model(args["checkpoint_file"])
     print(f"Action :::: {model.predict(echo_states_test)}")
+    return model.predict(echo_states_test)
 
 
 def run_MSR_MSMC(args):
@@ -187,6 +188,8 @@ def run_MSR_MSMC(args):
         print("parameters :::", model.count_params(), file=f)
         print("*" * 15, file=f)
 
+    return model.metrics_names[1], scores[1] * 100
+
 
 def MSMC(config_file):
     # load config file
@@ -196,11 +199,11 @@ def MSMC(config_file):
     if args['test_sample']:
         predict_sample(args)
     else:
-        run_MSR_MSMC(args)
+        return run_MSR_MSMC(args)
 
 
 if __name__ == "__main__":
-    if sys.argv[1]:
+    if len(sys.argv) > 1:
         MSMC(sys.argv[1])
     else:
         print("missing param :: Config File")
