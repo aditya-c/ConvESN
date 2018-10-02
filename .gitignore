@@ -7,6 +7,7 @@ reservoir
 # Personal
 *.ipynb*
 sandbox
+screenshots
 
 # OS Stuff
 *.DS_Store
