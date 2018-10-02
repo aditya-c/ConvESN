@@ -24,12 +24,12 @@ python src/Data_Preparation/Load_MSRA3D_real_world_modified.py ./data/modified/
 ```bash
 python src/Data_Preparation/Padding.py ./data/DataBackUp ./data/padded/
 ```
+> pads the input data
 
 ### Train network v2.0
 ```python
 python src/MSMC_2_0.py config/train_config.yaml
 ```
-
 
 #### Ignore these (testing code snipets)
 
