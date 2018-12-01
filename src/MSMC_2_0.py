@@ -89,6 +89,7 @@ def run_MSR_MSMC(args):
             with open(args["reservoir_file"], 'wb') as f:
                 pickle.dump(reservoirs, f)
         else:
+            # for test time we will use the reservoir from training
             with open(args["reservoir_file"], 'rb') as f:
                 reservoirs = pickle.load(f)
                 n_res = reservoirs[0].n_res
@@ -107,7 +108,7 @@ def run_MSR_MSMC(args):
         input_train, input_test = echo_states_train, echo_states_test
 
     else:
-        # else RESHAPE SKELETONS
+        # if we dont want to use reservoirs reshape the SKELETONS and feed to a Conv Entwork
         n_res = n_in
         skeletons_train_ = [np.expand_dims(x, 1) for x in skeletons_train]
         skeletons_test_ = [np.expand_dims(x, 1) for x in skeletons_test]
@@ -177,7 +178,7 @@ def run_MSR_MSMC(args):
     # print("summary :::", model.summary())
     # print(confusion_matrix(labels_test, labels_test_pred))
 
-    # SAVE RANDOM STUFF ####
+    # LOGGING ####
     with open(args["results_file"], "a+") as f:
         print("Reservoir :: {} @ {}".format(args["use_ESN"], get_time()), file=f)
         print("Input file :: {}".format(args["input_train_file"]), file=f)
