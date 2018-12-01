@@ -33,3 +33,24 @@ nb_epoch : 2, optimizer : adam, n_res : 12
 acc: 47.5 and loss is 1.2613783121109008
 parameters ::: 15940
 ***************
+Reservoir :: True @ 2018-09-27 10:15:22.957
+Input file :: ./data/padded/MSRAction3D_real_world_P4_Split_AS3_train.p
+Common Limb Reservoir :: False
+nb_epoch : 100, optimizer : adam, n_res : 12
+acc: 75.0 and loss is 0.8460432231426239
+parameters ::: 15940
+***************
+Reservoir :: True @ 2018-09-27 10:17:59.461
+Input file :: ./data/padded/MSRAction3D_real_world_P4_Split_AS3_train.p
+Common Limb Reservoir :: False
+nb_epoch : 100, optimizer : adam, n_res : 12
+acc: 72.5 and loss is 0.8610004901885986
+parameters ::: 15940
+***************
+Reservoir :: True @ 2018-09-27 10:20:55.258
+Input file :: ./data/padded/MSRAction3D_real_world_P4_Split_AS3_train.p
+Common Limb Reservoir :: False
+nb_epoch : 100, optimizer : adam, n_res : 12
+acc: 67.5 and loss is 0.991986870765686
+parameters ::: 15940
+***************

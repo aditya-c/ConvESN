@@ -1,0 +1,200 @@
+Reservoir :: True @ 2018-09-26 07:49:22.035
+Common Limb Reservoir :: True
+nb_epoch : 100, optimizer : adam, n_res : 12
+acc: 61.66666666666667 and loss is 1.081128509839376
+parameters ::: 16038
+***************
+Reservoir :: True @ 2018-09-26 07:55:25.738
+Common Limb Reservoir :: True
+nb_epoch : 100, optimizer : adam, n_res : 12
+acc: 61.66666666666667 and loss is 1.0603220105171203
+parameters ::: 16038
+***************
+Reservoir :: True @ 2018-09-26 08:01:30.038
+Common Limb Reservoir :: True
+nb_epoch : 100, optimizer : adam, n_res : 12
+acc: 70.0 and loss is 0.8973306953907013
+parameters ::: 16038
+***************
+Reservoir :: True @ 2018-09-26 08:07:33.837
+Common Limb Reservoir :: True
+nb_epoch : 100, optimizer : adam, n_res : 12
+acc: 61.66666666666667 and loss is 1.1909372369448343
+parameters ::: 16038
+***************
+Reservoir :: True @ 2018-09-26 08:13:37.638
+Common Limb Reservoir :: True
+nb_epoch : 100, optimizer : adam, n_res : 12
+acc: 61.66666666666667 and loss is 1.0664395372072855
+parameters ::: 16038
+***************
+Reservoir :: True @ 2018-09-26 08:19:39.938
+Common Limb Reservoir :: True
+nb_epoch : 100, optimizer : adam, n_res : 12
+acc: 63.33333333333333 and loss is 1.0352022667725882
+parameters ::: 16038
+***************
+Reservoir :: True @ 2018-09-26 08:25:43.134
+Common Limb Reservoir :: True
+nb_epoch : 100, optimizer : adam, n_res : 12
+acc: 66.66666666666666 and loss is 1.019843477010727
+parameters ::: 16038
+***************
+Reservoir :: True @ 2018-09-26 08:31:45.935
+Common Limb Reservoir :: True
+nb_epoch : 100, optimizer : adam, n_res : 12
+acc: 65.0 and loss is 0.951912005742391
+parameters ::: 16038
+***************
+Reservoir :: True @ 2018-09-26 08:37:47.339
+Common Limb Reservoir :: True
+nb_epoch : 100, optimizer : adam, n_res : 12
+acc: 66.66666666666666 and loss is 0.9568237642447154
+parameters ::: 16038
+***************
+Reservoir :: True @ 2018-09-26 08:43:50.437
+Common Limb Reservoir :: True
+nb_epoch : 100, optimizer : adam, n_res : 12
+acc: 65.0 and loss is 0.9530184805393219
+parameters ::: 16038
+***************
+Reservoir :: True @ 2018-09-26 15:25:31.530
+Input file :: ./data/padded/MSRAction3D_real_world_P4_Split_AS2_train.p
+Common Limb Reservoir :: True
+nb_epoch : 100, optimizer : adam, n_res : 12
+acc: 67.5 and loss is 1.1538912653923035
+parameters ::: 16136
+***************
+Reservoir :: True @ 2018-09-26 15:30:52.832
+Input file :: ./data/padded/MSRAction3D_real_world_P4_Split_AS2_train.p
+Common Limb Reservoir :: True
+nb_epoch : 100, optimizer : adam, n_res : 12
+acc: 68.75 and loss is 1.0741359680891036
+parameters ::: 16136
+***************
+Reservoir :: True @ 2018-09-26 15:36:14.431
+Input file :: ./data/padded/MSRAction3D_real_world_P4_Split_AS2_train.p
+Common Limb Reservoir :: True
+nb_epoch : 100, optimizer : adam, n_res : 12
+acc: 71.25 and loss is 1.0844846069812775
+parameters ::: 16136
+***************
+Reservoir :: True @ 2018-09-26 15:41:35.737
+Input file :: ./data/padded/MSRAction3D_real_world_P4_Split_AS2_train.p
+Common Limb Reservoir :: True
+nb_epoch : 100, optimizer : adam, n_res : 12
+acc: 66.25 and loss is 1.1906251281499862
+parameters ::: 16136
+***************
+Reservoir :: True @ 2018-09-26 15:46:56.933
+Input file :: ./data/padded/MSRAction3D_real_world_P4_Split_AS2_train.p
+Common Limb Reservoir :: True
+nb_epoch : 100, optimizer : adam, n_res : 12
+acc: 66.25 and loss is 1.1690769597887993
+parameters ::: 16136
+***************
+Reservoir :: True @ 2018-09-26 15:52:15.037
+Input file :: ./data/padded/MSRAction3D_real_world_P4_Split_AS2_train.p
+Common Limb Reservoir :: True
+nb_epoch : 100, optimizer : adam, n_res : 12
+acc: 63.74999999999999 and loss is 1.1455343037843704
+parameters ::: 16136
+***************
+Reservoir :: True @ 2018-09-26 15:57:34.733
+Input file :: ./data/padded/MSRAction3D_real_world_P4_Split_AS2_train.p
+Common Limb Reservoir :: True
+nb_epoch : 100, optimizer : adam, n_res : 12
+acc: 62.5 and loss is 1.1722090184688567
+parameters ::: 16136
+***************
+Reservoir :: True @ 2018-09-26 16:02:55.034
+Input file :: ./data/padded/MSRAction3D_real_world_P4_Split_AS2_train.p
+Common Limb Reservoir :: True
+nb_epoch : 100, optimizer : adam, n_res : 12
+acc: 66.25 and loss is 0.9770990774035454
+parameters ::: 16136
+***************
+Reservoir :: True @ 2018-09-26 16:08:15.033
+Input file :: ./data/padded/MSRAction3D_real_world_P4_Split_AS2_train.p
+Common Limb Reservoir :: True
+nb_epoch : 100, optimizer : adam, n_res : 12
+acc: 67.5 and loss is 1.1757419109344482
+parameters ::: 16136
+***************
+Reservoir :: True @ 2018-09-26 16:13:36.332
+Input file :: ./data/padded/MSRAction3D_real_world_P4_Split_AS2_train.p
+Common Limb Reservoir :: True
+nb_epoch : 100, optimizer : adam, n_res : 12
+acc: 63.74999999999999 and loss is 1.1646073013544083
+parameters ::: 16136
+***************
+Reservoir :: True @ 2018-09-27 10:23:17.858
+Input file :: ./data/padded/MSRAction3D_real_world_P4_Split_AS3_train.p
+Common Limb Reservoir :: True
+nb_epoch : 100, optimizer : adam, n_res : 12
+acc: 80.0 and loss is 0.6191601753234863
+parameters ::: 15940
+***************
+Reservoir :: True @ 2018-09-27 10:25:58.957
+Input file :: ./data/padded/MSRAction3D_real_world_P4_Split_AS3_train.p
+Common Limb Reservoir :: True
+nb_epoch : 100, optimizer : adam, n_res : 12
+acc: 65.0 and loss is 0.8970984935760498
+parameters ::: 15940
+***************
+Reservoir :: True @ 2018-09-27 10:28:40.158
+Input file :: ./data/padded/MSRAction3D_real_world_P4_Split_AS3_train.p
+Common Limb Reservoir :: True
+nb_epoch : 100, optimizer : adam, n_res : 12
+acc: 67.5 and loss is 0.8839803218841553
+parameters ::: 15940
+***************
+Reservoir :: True @ 2018-09-27 10:31:20.958
+Input file :: ./data/padded/MSRAction3D_real_world_P4_Split_AS3_train.p
+Common Limb Reservoir :: True
+nb_epoch : 100, optimizer : adam, n_res : 12
+acc: 67.5 and loss is 0.8899178504943848
+parameters ::: 15940
+***************
+Reservoir :: True @ 2018-09-27 10:34:02.457
+Input file :: ./data/padded/MSRAction3D_real_world_P4_Split_AS3_train.p
+Common Limb Reservoir :: True
+nb_epoch : 100, optimizer : adam, n_res : 12
+acc: 77.5 and loss is 1.00649551153183
+parameters ::: 15940
+***************
+Reservoir :: True @ 2018-09-27 10:36:42.557
+Input file :: ./data/padded/MSRAction3D_real_world_P4_Split_AS3_train.p
+Common Limb Reservoir :: True
+nb_epoch : 100, optimizer : adam, n_res : 12
+acc: 77.5 and loss is 0.6845169544219971
+parameters ::: 15940
+***************
+Reservoir :: True @ 2018-09-27 10:39:23.557
+Input file :: ./data/padded/MSRAction3D_real_world_P4_Split_AS3_train.p
+Common Limb Reservoir :: True
+nb_epoch : 100, optimizer : adam, n_res : 12
+acc: 65.0 and loss is 1.0306614637374878
+parameters ::: 15940
+***************
+Reservoir :: True @ 2018-09-27 10:42:04.258
+Input file :: ./data/padded/MSRAction3D_real_world_P4_Split_AS3_train.p
+Common Limb Reservoir :: True
+nb_epoch : 100, optimizer : adam, n_res : 12
+acc: 77.5 and loss is 0.7106335639953614
+parameters ::: 15940
+***************
+Reservoir :: True @ 2018-09-27 10:44:43.957
+Input file :: ./data/padded/MSRAction3D_real_world_P4_Split_AS3_train.p
+Common Limb Reservoir :: True
+nb_epoch : 100, optimizer : adam, n_res : 12
+acc: 72.5 and loss is 0.9164868593215942
+parameters ::: 15940
+***************
+Reservoir :: True @ 2018-09-27 10:47:25.357
+Input file :: ./data/padded/MSRAction3D_real_world_P4_Split_AS3_train.p
+Common Limb Reservoir :: True
+nb_epoch : 100, optimizer : adam, n_res : 12
+acc: 70.0 and loss is 0.8425063729286194
+parameters ::: 15940
+***************

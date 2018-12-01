@@ -1,0 +1,65 @@
+### Input Data ###
+
+  input_train_file: "./data/padded/MSRAction3D_real_world_P4_Split_AS4_train.p"
+  input_test_file: "./data/padded/MSRAction3D_real_world_P4_Split_AS4_test.p"
+  # location of the padded skeleton data
+  save_results : yes
+  # choose to save results
+  split_number : 4
+  # only serves as a marker on log files
+
+### Save Locations ###
+
+  reservoir_file: "reservoir/reservoir_default_4.pkl"
+  # save reservoir along with model
+  checkpoint_file: "check_points/checkpoint_default_4.hdf5"
+  # name of checkpoint file (save to/ load from)
+  results_file : "results/results_sep25_default_4.txt"
+  # save additional results to file (will be appended)
+  log_dir : "./logs"
+  # log directory
+
+
+### TRAIN ###
+
+  train: yes
+  # trains a model if set to true
+  nb_epochs: 100
+  # number of epochs
+  batch_size: 8
+
+### TEST ###
+
+  test_sample: no
+  # predicts on a sample if yes
+  sample_location : no
+
+
+### Model Attributes ###
+
+  use_ESN : yes
+  expansion_factor : 1
+
+  common_reservoir_for_limbs : no
+
+  IS: 0.1
+  SR: 0.9
+  sparsity: 0.3
+  leakyrate: 1.0
+
+  nb_filter : 16
+  nb_row :
+    - 2
+    - 3
+    - 4
+    # time scales
+  kernel_initializer : 'lecun_uniform'
+  activation : 'relu'
+  padding : 'valid'
+  strides :
+    - 1
+    - 1
+  data_format : 'channels_first'
+
+  optimizer : 'adam'
+  verbose : 1
