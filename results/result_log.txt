@@ -1,0 +1,26 @@
+The model hyper parameters are:
+nb_epoch : 100, optimizer : adam, n_res : 12, parameters ::: 16038
+
+
+Following are the results on ConvESN for the MSRDailyActivity Dataset:
+
+Input file :: ./data/padded/MSRAction3D_real_world_P4_Split_AS1_train.p
+acc: 63.33333333333333 and loss is 1.5051616330941517
+
+Input file :: ./data/padded/MSRAction3D_real_world_P4_Split_AS2_train.p
+acc: 61.25000000000001 and loss is 1.5968752324581146
+
+Input file :: ./data/padded/MSRAction3D_real_world_P4_Split_AS3_train.p
+acc: 75.0 and loss is 0.8460432231426239
+
+
+Following are the results using a common reservoir layer for limbs:
+
+Input file :: ./data/padded/MSRAction3D_real_world_P4_Split_AS1_train.p
+acc: 70.0 and loss is 0.8973306953907013
+
+Input file :: ./data/padded/MSRAction3D_real_world_P4_Split_AS2_train.p
+acc: 61.25000000000001 and loss is 1.5968752324581146
+
+Input file :: ./data/padded/MSRAction3D_real_world_P4_Split_AS3_train.p
+acc: 80.0 and loss is 0.6191601753234863
